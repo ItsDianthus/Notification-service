@@ -7,13 +7,13 @@ build: build_bot build_scrapper
 build_bot:
 	@echo "Выполняется go build для таргета bot"
 	@mkdir -p .bin
-	@go build -o ./bin/bot ./cmd/bot
+	@go build -o ./bin/bot.exe ./cmd/bot
 
 .PHONY: build_scrapper
 build_scrapper:
 	@echo "Выполняется go build для таргета scrapper"
 	@mkdir -p .bin
-	@go build -o ./bin/scrapper ./cmd/scrapper
+	@go build -o ./bin/scrapper.exe ./cmd/scrapper
 
 
 ## test: run all tests
@@ -61,4 +61,4 @@ generate_openapi:
 
 .PHONY: clean
 clean:
-	@rm -rf./bin
+	@if exist .\bin\* del /Q .\bin\*
