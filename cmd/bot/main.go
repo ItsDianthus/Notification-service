@@ -1,85 +1,65 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
+	"go-ItsDianthus-NotificationLink/internal/bot/application"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/commands"
+	"go-ItsDianthus-NotificationLink/internal/bot/domain"
+	"go-ItsDianthus-NotificationLink/internal/bot/handler"
+	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/repo"
+	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
+	"go-ItsDianthus-NotificationLink/pkg/log_package"
+	"log/slog"
+	"os"
 )
 
-type Command struct {
-	Command string `json:"command"`
-	URL     string `json:"url"`
-}
-
-func sendCommandToScrapper(command string, url string) error {
-	scrapperURL := "http://localhost:8080/command"
-
-	cmd := Command{
-		Command: command,
-		URL:     url,
+func getEnv(key, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
 	}
-
-	jsonData, err := json.Marshal(cmd)
-	if err != nil {
-		return fmt.Errorf("failed to marshal command: %v", err)
-	}
-
-	resp, err := http.Post(scrapperURL, "application/json", bytes.NewBuffer(jsonData))
-	if err != nil {
-		return fmt.Errorf("failed to send request to scrapper: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("received non-OK response from scrapper: %s", resp.Status)
-	}
-
-	return nil
+	return defaultValue
 }
 
 func main() {
-	err := godotenv.Load(".env")
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Printf("Ошибка загрузки .env файла: %v\n", err)
 	}
 
-	token := os.Getenv("TELEGRAM_TOKEN")
-	if token == "" {
-		log.Fatal("TELEGRAM_TOKEN is not set in .env file")
-	}
+	env := getEnv("APP_ENV", log_package.EnvLocal)
 
-	bot, err := tgbotapi.NewBotAPI(token)
+	logger := log_package.NewLoggerByEnvironment(env)
+	logger.Info("Запуск сервиса бота", slog.String("env", env))
+
+	config := domain.BotConfig{
+		Token:           getEnv("TELEGRAM_BOT_TOKEN", ""),
+		ScrapperBaseURL: getEnv("SCRAPPER_BASE_URL", ""),
+	}
+	logger.Info("Конфигурация бота загружена",
+		slog.String("token", config.Token),
+		slog.String("scrapper_url", config.ScrapperBaseURL),
+	)
+
+	// Создаём Telegram-клиент
+	tg, err := tgbotapi.NewBotAPI(config.Token)
 	if err != nil {
-		log.Fatal(err)
+		logger.Info("Не удалось создать Telegram API: %v", err)
 	}
+	updates := tg.GetUpdatesChan(tgbotapi.NewUpdate(0))
 
-	bot.Debug = true
+	// Инициализируем репозиторий сессий, регистр и команды
+	repo := repo.NewInMemorySessionRepo()
+	registry := application.NewCommandRegistry()
+	botClient := telegram.NewTgBotClient(tg)
 
-	updates := bot.GetUpdatesChan(tgbotapi.UpdateConfig{
-		Timeout: 10,
-	})
+	// Регистрируем команды
+	registry.Register(commands.NewStartCommand(botClient))
 
-	fmt.Println("Bot is running...")
-
-	for update := range updates {
-		if update.Message.Text == "get" {
-			err := sendCommandToScrapper("get", "http://example.com")
-			if err != nil {
-				log.Printf("Error sending command to scrapper: %v", err)
-				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Failed to process command"))
-				return
-			}
-
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Command sent to scrapper successfully"))
-		} else if update.Message != nil {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			bot.Send(msg)
-		}
-	}
+	// Запускаем процессор
+	processor := handler.NewMessageProcessor(botClient, repo, registry, updates)
+	ctx := context.Background()
+	processor.ProcessUpdates(ctx)
 }

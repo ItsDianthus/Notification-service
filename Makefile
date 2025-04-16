@@ -57,7 +57,11 @@ generate_openapi:
 	@mkdir -p internal/api/openapi/v1
 	@oapi-codegen -package v1 \
 		-generate server,types \
-		api/openapi/v1/service.yaml > internal/api/openapi/v1/service.gen.go
+		api/openapi/v1/bot-api.yaml > internal/api/openapi/v1/bot-api.gen.go
+	@oapi-codegen -package v1 \
+    		-generate server,types \
+    		api/openapi/v1/scrapper-api.yaml > internal/api/openapi/v1/scrapper-api.gen.go
+
 
 .PHONY: clean
 clean:
