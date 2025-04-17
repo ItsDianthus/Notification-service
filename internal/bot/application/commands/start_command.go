@@ -2,7 +2,6 @@ package commands
 
 import (
 	"context"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"go-ItsDianthus-NotificationLink/internal/bot/domain"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
 )
@@ -22,22 +21,20 @@ func (c *StartCommand) Execute(ctx context.Context, session *domain.UserSession,
 	session.CurrentState = domain.StateDefault
 	session.ActiveCommand = ""
 
-	startKb := tgbotapi.NewReplyKeyboard(tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("/start"),
-	))
-	c.Bot.SendMessage(session.UserID,
-		"Привет! Нажмите /start для начала.",
-		startKb,
-	)
-
-	// РЕГА СЕССИИ в хранилище инмемори
-
 	allCmds := []string{"/help", "/track", "/untrack", "/list"}
 	fullKb := telegram.BuildCommandKeyboard(allCmds)
 
-	c.Bot.SendMessage(session.UserID,
-		"Вы зарегистрированы! Доступные команды:",
-		fullKb,
-	)
+	if session.IsRegistered {
+		c.Bot.SendMessage(session.UserID,
+			"Вы уже зарегистрированы. Доступные команды:",
+			fullKb,
+		)
+	} else {
+		session.IsRegistered = true
+		c.Bot.SendMessage(session.UserID,
+			"Добро пожаловать! Вы зарегистрированы. Доступные команды:",
+			fullKb,
+		)
+	}
 	return nil
 }

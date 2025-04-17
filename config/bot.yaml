@@ -1,0 +1,16 @@
+env: "local"
+
+telegram:
+  token: "" # Нужно указать в .env строчкой TELEGRAM_BOT_TOKEN=your-token-here
+
+server:
+  host: localhost
+  port: 8081
+  read_timeout: 2s
+  write_timeout: 2s
+  shutdown_timeout: 2s
+
+scrapper:
+  host: localhost
+  port: 8080
+  timeout: 10s

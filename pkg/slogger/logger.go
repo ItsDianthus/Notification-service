@@ -1,4 +1,4 @@
-package log_package
+package slogger
 
 import (
 	"log/slog"

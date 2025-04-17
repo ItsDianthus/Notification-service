@@ -15,7 +15,7 @@ func NewInMemorySessionRepo() *InMemorySessionRepo {
 	return &InMemorySessionRepo{sessions: make(map[int64]*domain.UserSession)}
 }
 
-func (r *InMemorySessionRepo) GetOrCreateSession(userID int64) *domain.UserSession {
+func (r *InMemorySessionRepo) GetOrCreate(userID int64) *domain.UserSession {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if sess, ok := r.sessions[userID]; ok {
@@ -31,7 +31,7 @@ func (r *InMemorySessionRepo) GetOrCreateSession(userID int64) *domain.UserSessi
 	return sess
 }
 
-func (r *InMemorySessionRepo) SaveSession(sess *domain.UserSession) {
+func (r *InMemorySessionRepo) Save(sess *domain.UserSession) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	sess.UpdatedAt = time.Now()

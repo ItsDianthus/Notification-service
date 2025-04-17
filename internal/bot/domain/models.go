@@ -12,11 +12,6 @@ type TelegramMessage struct {
 	Timestamp  time.Time `json:"timestamp"`
 }
 
-type BotConfig struct {
-	Token           string `json:"token"`
-	ScrapperBaseURL string `json:"scrapper_base_url"`
-}
-
 type TelegramUpdate struct {
 	UpdateID int              `json:"update_id"`
 	Message  *TelegramMessage `json:"message"`

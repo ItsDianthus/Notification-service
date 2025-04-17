@@ -8,4 +8,5 @@ type UserSession struct {
 	ActiveCommand string                 `json:"pending_cmd,omitempty"`
 	TempData      map[string]interface{} `json:"temp_data,omitempty"`
 	UpdatedAt     time.Time              `json:"updated_at"`
+	IsRegistered  bool                   `json:"is_registered"`
 }

@@ -2,17 +2,26 @@ package application
 
 import (
 	"context"
-	"fmt"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/errs"
 	"go-ItsDianthus-NotificationLink/internal/bot/domain"
 	"strings"
 )
 
-func DispatchCommand(ctx context.Context, reg *CommandRegistry, session *domain.UserSession, input string) error {
+func HandleCmd(
+	ctx context.Context,
+	reg *CommandRegistry,
+	session *domain.UserSession,
+	input string,
+) error {
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
 		return nil
 	}
 	name, args := parts[0], parts[1:]
+
+	if !session.IsRegistered && name != "/start" {
+		return errs.ErrNotRegistered{}
+	}
 
 	if session.ActiveCommand != "" {
 		name = session.ActiveCommand
@@ -20,8 +29,9 @@ func DispatchCommand(ctx context.Context, reg *CommandRegistry, session *domain.
 
 	cmd, ok := reg.Get(name)
 	if !ok {
-		return fmt.Errorf("неизвестная команда: %s", name)
+		return errs.ErrUnknownCommand{Name: name}
 	}
+
 	session.ActiveCommand = name
 	return cmd.Execute(ctx, session, args)
 }
