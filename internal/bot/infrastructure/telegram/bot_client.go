@@ -28,6 +28,5 @@ func (c *TgBotClient) SendMessage(chatID int64, text string, replyMarkup ...inte
 		}
 	}
 
-	// Здесь надо будет логгировать
 	c.api.Send(msg)
 }

@@ -1,4 +1,4 @@
-package commands
+package command_registry
 
 import (
 	"context"

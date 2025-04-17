@@ -3,7 +3,8 @@ package application
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"go-ItsDianthus-NotificationLink/internal/bot/application/errs"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/erros"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/repo"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
 	"log/slog"
@@ -12,7 +13,7 @@ import (
 type MessageProcessor struct {
 	BotClient telegram.BotClient
 	Repo      *repo.InMemorySessionRepo
-	Registry  *CommandRegistry
+	Registry  *command_registry.CommandRegistry
 	Updates   tgbotapi.UpdatesChannel
 	Logger    *slog.Logger
 }
@@ -20,7 +21,7 @@ type MessageProcessor struct {
 func NewMessageProcessor(
 	bot telegram.BotClient,
 	repo *repo.InMemorySessionRepo,
-	reg *CommandRegistry,
+	reg *command_registry.CommandRegistry,
 	updates tgbotapi.UpdatesChannel,
 	logger *slog.Logger,
 ) *MessageProcessor {
@@ -41,8 +42,13 @@ func (p *MessageProcessor) ProcessUpdates(ctx context.Context) {
 		chatID := update.Message.Chat.ID
 		text := update.Message.Text
 
+		p.Logger.Info("Incoming message",
+			slog.Int64("chat_id", update.Message.Chat.ID),
+			slog.String("text", update.Message.Text),
+		)
+
 		session := p.Repo.GetOrCreate(chatID)
-		err := HandleCmd(ctx, p.Registry, session, text)
+		err := command_registry.HandleCmd(ctx, p.Registry, session, text)
 
 		switch e := err.(type) {
 		case nil:
@@ -51,7 +57,7 @@ func (p *MessageProcessor) ProcessUpdates(ctx context.Context) {
 				slog.String("input", text),
 			)
 
-		case errs.ErrNotRegistered:
+		case erros.ErrNotRegistered:
 			p.Logger.Warn("User not registered",
 				slog.Int64("chat_id", chatID),
 				slog.String("input", text),
@@ -61,7 +67,7 @@ func (p *MessageProcessor) ProcessUpdates(ctx context.Context) {
 				telegram.BuildCommandKeyboard([]string{"/start"}),
 			)
 
-		case errs.ErrUnknownCommand:
+		case erros.ErrUnknownCommand:
 			p.Logger.Warn("Unknown command",
 				slog.Int64("chat_id", chatID),
 				slog.String("input", text),

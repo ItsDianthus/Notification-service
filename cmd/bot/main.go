@@ -6,8 +6,10 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"go-ItsDianthus-NotificationLink/internal/bot/application"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
 	"go-ItsDianthus-NotificationLink/internal/bot/application/commands"
 	"go-ItsDianthus-NotificationLink/internal/bot/config"
+	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/clients"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/repo"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
 	"go-ItsDianthus-NotificationLink/pkg/slogger"
@@ -50,21 +52,25 @@ func main() {
 	botClient := telegram.NewTgBotClient(tgAPI)
 
 	// HTTP-клиент для Scrapper-сервиса
-	// scrapperClient := application.NewScrapperHTTPClient(cfg.Scrapper.Address(), cfg.Scrapper.Timeout)
+	scrapperClient := clients.NewScrapperHTTPClient(cfg.Scrapper.Address(), cfg.Scrapper.Timeout)
 
 	// Инициализация in-memory репозитория сессий
 	sessRepo := repo.NewInMemorySessionRepo()
 
 	// Регистрация команд
-	r := application.NewCommandRegistry()
+	r := command_registry.NewCommandRegistry()
 	r.Register(commands.NewStartCommand(botClient))
+	r.Register(commands.NewMenuCommand(botClient, r))
 	//r.Register(commands.NewHelpCommand(botClient, r))
-	//r.Register(commands.NewTrackCommand(botClient, scrapperClient))
+	r.Register(commands.NewTrackCommand(botClient, scrapperClient, r))
 	//r.Register(commands.NewUntrackCommand(botClient, scrapperClient))
 	//r.Register(commands.NewListCommand(botClient, scrapperClient))
 
 	// Настройка горутин на получение и обработку сообщений
-	updates := tgAPI.GetUpdatesChan(tgbotapi.NewUpdate(0))
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 1 // ждать не дольше 10 секунд
+	updates := tgAPI.GetUpdatesChan(u)
+
 	proc := application.NewMessageProcessor(botClient, sessRepo, r, updates, lg)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
