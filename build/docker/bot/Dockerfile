@@ -21,4 +21,4 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 COPY --from=builder /bin/bot /bin/bot
 COPY config/bot.yaml /etc/bot.yaml
-ENTRYPOINT ["/bin/bot", "--config", "/etc/bot.yaml"]
+ENTRYPOINT ["/bin/bot", "--config", "config/bot.yaml"]

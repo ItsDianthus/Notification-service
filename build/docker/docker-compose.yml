@@ -13,7 +13,8 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
     volumes:
-      - ../../config/bot.yaml:/etc/bot.yaml:ro
+      - ../../config:/app/config:ro
+
 
   scrapper:
     build:
@@ -28,7 +29,8 @@ services:
       - BOT_PORT=8081
       - GITHUB_TOKEN=${GITHUB_TOKEN}
     volumes:
-      - ../../config/scrapper.yaml:/etc/scrapper.yaml:ro
+      - ../../config:/app/config:ro
+
 
 networks:
   default:

@@ -1,29 +1,29 @@
-env: local
+# config/scrapper.yaml
+env: "local"
 
 server:
   host: "0.0.0.0"
   port: "8080"
-  read_timeout: 5s
-  write_timeout: 5s
+  read_timeout: 2s
+  write_timeout: 2s
   shutdown_timeout: 10s
 
-  env: "local"
+scheduler:
+  interval: 30s
+  timeout: 5s
 
-  scheduler:
-    interval: 30s
-    timeout: 5s
+bot:
+  host: "bot"
+  port: "8081"
+  timeout: 10s
 
-  bot:
-    host: "localhost"
-    port: "8081"
-    timeout: 10s
+fetch:
+  github:
+    base_url:   "https://api.github.com"
+    auth_token: "${GITHUB_TOKEN}"
+    timeout:    2s
 
-  fetch:
-    github:
-      base_url: "https://api.github.com"
-      auth_token: ""      # сюда при необходимости подставить токен из env
-      timeout: 2s
-
-    stack_overflow:
-      base_url: "https://api.stackexchange.com/2.3"
-      timeout: 2s
+  stack_overflow:
+    base_url:   "https://api.stackexchange.com/2.3"
+    auth_token: ""
+    timeout:    2s

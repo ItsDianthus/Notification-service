@@ -2,6 +2,7 @@ package command_registry
 
 import (
 	"context"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/erros"
 	"strings"
 
 	"go-ItsDianthus-NotificationLink/internal/bot/domain"
@@ -37,12 +38,12 @@ func HandleCmd(
 	}
 
 	if !session.IsRegistered && name != "/start" {
-		return errs.ErrNotRegistered{}
+		return erros.ErrNotRegistered{}
 	}
 
 	cmd, ok := reg.Get(name)
 	if !ok {
-		return errs.ErrUnknownCommand{Name: name}
+		return erros.ErrUnknownCommand{Name: name}
 	}
 
 	session.ActiveCommand = name

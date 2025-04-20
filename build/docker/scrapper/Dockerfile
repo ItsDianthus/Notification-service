@@ -21,4 +21,4 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 COPY --from=builder /bin/scrapper /bin/scrapper
 COPY config/scrapper.yaml /etc/scrapper.yaml
-ENTRYPOINT ["/bin/scrapper", "--config", "/etc/scrapper.yaml"]
+ENTRYPOINT ["/bin/scrapper", "--config", "config/scrapper.yaml"]
