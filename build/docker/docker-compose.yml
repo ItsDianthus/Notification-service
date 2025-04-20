@@ -1,31 +1,35 @@
+# build/docker/docker-compose.yml
 version: "3.8"
 
 services:
   bot:
     build:
-      context: ../..
+      context: ../../           # корень репозитория
       dockerfile: build/docker/bot/Dockerfile
-    container_name: bot
-    hostname: bot
+    image: itsdianthus/notification-bot:latest
+    container_name: notification-bot
     ports:
-      - "8000:8000"
-    env_file:
-      - ./bot/.env
-    restart: unless-stopped
-    networks:
-      - bot-scrapper-network
+      - "8081:8081"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+    volumes:
+      - ../../config/bot.yaml:/etc/bot.yaml:ro
+
   scrapper:
     build:
-      context: ../..
+      context: ../../
       dockerfile: build/docker/scrapper/Dockerfile
-    container_name: scrapper
-    hostname: scrapper
+    image: itsdianthus/notification-scrapper:latest
+    container_name: notification-scrapper
     ports:
-      - "8001:8000"
-    restart: unless-stopped
-    networks:
-      - bot-scrapper-network
+      - "8080:8080"
+    environment:
+      - BOT_HOST=bot
+      - BOT_PORT=8081
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    volumes:
+      - ../../config/scrapper.yaml:/etc/scrapper.yaml:ro
 
 networks:
-  bot-scrapper-network:
-    driver: bridge
+  default:
+    name: notification-net

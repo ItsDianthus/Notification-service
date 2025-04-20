@@ -1,14 +1,24 @@
-FROM golang:1.24-alpine AS builder
-WORKDIR /build
+FROM ubuntu:latest
+LABEL authors="Dianazavr"
+# build/docker/bot/Dockerfile
 
+# --- stage: build binary ---
+FROM golang:1.23-alpine AS builder
+WORKDIR /app
 COPY go.mod go.sum ./
+RUN go mod download \
+  && go mod tidy
 RUN go mod download
 
 COPY . .
-RUN go build -o /bin/bot ./cmd/bot
+WORKDIR /app/cmd/bot
+RUN CGO_ENABLED=0 go build -o /bin/bot
 
-FROM alpine:latest AS runtime
-
+# --- stage: final image ---
+FROM alpine:3.17
+RUN apk update && \
+    apk add --no-cache ca-certificates && \
+    rm -rf /var/cache/apk/*
 COPY --from=builder /bin/bot /bin/bot
-
-CMD ["/bin/bot"]
+COPY config/bot.yaml /etc/bot.yaml
+ENTRYPOINT ["/bin/bot", "--config", "/etc/bot.yaml"]
