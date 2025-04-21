@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go-ItsDianthus-NotificationLink/internal/api/openapi/scrapper_api"
-	appClients "go-ItsDianthus-NotificationLink/internal/bot/application/clients"
 	"io"
 	"net/http"
 	"strconv"
@@ -19,13 +18,39 @@ type ScrapperHTTPClient struct {
 	client  *http.Client
 }
 
-var _ appClients.ScrapperClient = (*ScrapperHTTPClient)(nil)
-
 func NewScrapperHTTPClient(baseURL string, timeout time.Duration) *ScrapperHTTPClient {
 	return &ScrapperHTTPClient{
 		baseURL: baseURL,
 		client:  &http.Client{Timeout: timeout},
 	}
+}
+
+func (c *ScrapperHTTPClient) RegisterChat(ctx context.Context, chatID int64) error {
+	url := fmt.Sprintf("%s/tg-chat/%d", c.baseURL, chatID)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("unexpected status %d", resp.StatusCode)
+	}
+	return nil
+}
+
+func (c *ScrapperHTTPClient) UnregisterChat(ctx context.Context, chatID int64) error {
+	url := fmt.Sprintf("%s/tg-chat/%d", c.baseURL, chatID)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func (c *ScrapperHTTPClient) AddSubscription(

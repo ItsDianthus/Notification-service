@@ -59,12 +59,12 @@ func main() {
 
 	// Регистрация команд
 	r := command_registry.NewCommandRegistry()
-	r.Register(commands.NewStartCommand(botClient))
+	r.Register(commands.NewStartCommand(botClient, scrapperClient))
 	r.Register(commands.NewMenuCommand(botClient, r))
-	//r.Register(commands.NewHelpCommand(botClient, r))
 	r.Register(commands.NewTrackCommand(botClient, scrapperClient, r))
-	//r.Register(commands.NewUntrackCommand(botClient, scrapperClient))
-	//r.Register(commands.NewListCommand(botClient, scrapperClient))
+	r.Register(commands.NewHelpCommand(botClient, r))
+	r.Register(commands.NewUntrackCommand(botClient, scrapperClient))
+	r.Register(commands.NewListCommand(botClient, scrapperClient))
 
 	// Настройка горутин на получение и обработку сообщений
 	u := tgbotapi.NewUpdate(0)
