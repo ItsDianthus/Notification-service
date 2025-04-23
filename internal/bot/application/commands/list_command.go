@@ -42,3 +42,7 @@ func (c *ListCommand) Execute(ctx context.Context, session *domain.UserSession, 
 	c.Bot.SendMessage(session.UserID, builder.String(), kb)
 	return nil
 }
+
+func (c *ListCommand) IsStateful() bool {
+	return false
+}

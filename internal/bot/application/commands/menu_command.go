@@ -2,28 +2,28 @@ package commands
 
 import (
 	"context"
-	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_handling"
 
 	"go-ItsDianthus-NotificationLink/internal/bot/domain"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
 )
 
-type CancelCommand struct {
+type MenuCommand struct {
 	Bot      telegram.BotClient
-	Registry *command_registry.CommandRegistry
+	Registry *command_handling.CommandRegistry
 }
 
-func NewMenuCommand(bot telegram.BotClient, reg *command_registry.CommandRegistry) *CancelCommand {
-	return &CancelCommand{Bot: bot, Registry: reg}
+func NewMenuCommand(bot telegram.BotClient, reg *command_handling.CommandRegistry) *MenuCommand {
+	return &MenuCommand{Bot: bot, Registry: reg}
 }
 
-func (c *CancelCommand) Name() string { return "/menu" }
+func (c *MenuCommand) Name() string { return "/menu" }
 
-func (c *CancelCommand) Description() string {
+func (c *MenuCommand) Description() string {
 	return "Отменить текущую операцию"
 }
 
-func (c *CancelCommand) Execute(ctx context.Context, session *domain.UserSession, args []string) error {
+func (c *MenuCommand) Execute(ctx context.Context, session *domain.UserSession, args []string) error {
 	session.CurrentState = domain.StateDefault
 	session.ActiveCommand = ""
 	session.TempData = nil
@@ -36,4 +36,8 @@ func (c *CancelCommand) Execute(ctx context.Context, session *domain.UserSession
 		kb,
 	)
 	return nil
+}
+
+func (c *MenuCommand) IsStateful() bool {
+	return false
 }

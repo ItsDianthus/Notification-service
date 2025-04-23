@@ -53,6 +53,7 @@ func (c *ScrapperHTTPClient) UnregisterChat(ctx context.Context, chatID int64) e
 	return nil
 }
 
+// AddSubscription - пользуемся сгенерированным кодом, создаем объект добавления ссылки, делаем пост-запрос
 func (c *ScrapperHTTPClient) AddSubscription(
 	ctx context.Context,
 	chatID int64,
@@ -60,6 +61,7 @@ func (c *ScrapperHTTPClient) AddSubscription(
 	tags []string,
 	filters map[string]string,
 ) error {
+	// Формирует сгенерированную кодгеном модель
 	reqBody := scrapper_api.AddLinkRequest{
 		Link: &link,
 		Tags: &tags,
@@ -71,17 +73,20 @@ func (c *ScrapperHTTPClient) AddSubscription(
 		}
 		reqBody.Filters = &fs
 	}
-
+	// Сериализуем в Джсон для ПОСТ-запроса
 	b, err := json.Marshal(reqBody)
 	if err != nil {
 		return fmt.Errorf("marshal AddLinkRequest: %w", err)
 	}
 
 	url := c.baseURL + "/links"
+
+	// Делаем этот самый пост-запрос
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(b))
 	if err != nil {
 		return fmt.Errorf("new request: %w", err)
 	}
+
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Tg-Chat-Id", strconv.FormatInt(chatID, 10))
 

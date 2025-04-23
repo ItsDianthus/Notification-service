@@ -3,7 +3,7 @@ package application
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_handling"
 	"go-ItsDianthus-NotificationLink/internal/bot/application/erros"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/repo"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
@@ -13,7 +13,7 @@ import (
 type MessageProcessor struct {
 	BotClient telegram.BotClient
 	Repo      *repo.InMemorySessionRepo
-	Registry  *command_registry.CommandRegistry
+	Registry  *command_handling.CommandRegistry
 	Updates   tgbotapi.UpdatesChannel
 	Logger    *slog.Logger
 }
@@ -21,7 +21,7 @@ type MessageProcessor struct {
 func NewMessageProcessor(
 	bot telegram.BotClient,
 	repo *repo.InMemorySessionRepo,
-	reg *command_registry.CommandRegistry,
+	reg *command_handling.CommandRegistry,
 	updates tgbotapi.UpdatesChannel,
 	logger *slog.Logger,
 ) *MessageProcessor {
@@ -48,7 +48,7 @@ func (p *MessageProcessor) ProcessUpdates(ctx context.Context) {
 		)
 
 		session := p.Repo.GetOrCreate(chatID)
-		err := command_registry.HandleCmd(ctx, p.Registry, session, text)
+		err := command_handling.HandleCmd(ctx, p.Registry, session, text)
 
 		switch e := err.(type) {
 		case nil:

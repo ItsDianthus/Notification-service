@@ -12,5 +12,5 @@ server:
 
 scrapper:
   host: localhost
-  port: 8080
+  port: 8082
   timeout: 10s

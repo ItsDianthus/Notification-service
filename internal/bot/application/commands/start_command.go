@@ -42,10 +42,15 @@ func (c *StartCommand) Execute(ctx context.Context, session *domain.UserSession,
 		}
 
 		session.IsRegistered = true
+
 		c.Bot.SendMessage(session.UserID,
 			"Добро пожаловать! Вы зарегистрированы. Доступные команды:",
 			fullKb,
 		)
 	}
 	return nil
+}
+
+func (c *StartCommand) IsStateful() bool {
+	return false
 }

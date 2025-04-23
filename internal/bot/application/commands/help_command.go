@@ -3,7 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
-	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_handling"
 	"go-ItsDianthus-NotificationLink/internal/bot/domain"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/telegram"
 	"strings"
@@ -11,10 +11,10 @@ import (
 
 type HelpCommand struct {
 	Bot      telegram.BotClient
-	Registry *command_registry.CommandRegistry
+	Registry *command_handling.CommandRegistry
 }
 
-func NewHelpCommand(bot telegram.BotClient, reg *command_registry.CommandRegistry) *HelpCommand {
+func NewHelpCommand(bot telegram.BotClient, reg *command_handling.CommandRegistry) *HelpCommand {
 	return &HelpCommand{Bot: bot, Registry: reg}
 }
 
@@ -39,4 +39,8 @@ func (c *HelpCommand) Execute(ctx context.Context, session *domain.UserSession, 
 	kb := telegram.BuildCommandKeyboard(names)
 	c.Bot.SendMessage(session.UserID, text, kb)
 	return nil
+}
+
+func (c *HelpCommand) IsStateful() bool {
+	return false
 }

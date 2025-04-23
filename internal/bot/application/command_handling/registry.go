@@ -1,4 +1,4 @@
-package command_registry
+package command_handling
 
 type CommandRegistry struct {
 	commands map[string]Command

@@ -1,4 +1,4 @@
-package command_registry
+package command_handling
 
 import (
 	"context"
@@ -19,12 +19,16 @@ func HandleCmd(
 		return nil
 	}
 
-	name := parts[0]
+	originalName := parts[0]
+	var name string
 	var args []string
-	if session.ActiveCommand != "" && name != "/menu" {
+
+	// Если пользователь в stateful команде, но не хочет сбрасывать
+	if session.ActiveCommand != "" && originalName != "/menu" {
 		name = session.ActiveCommand
 		args = parts
 	} else {
+		name = originalName
 		args = parts[1:]
 	}
 
@@ -46,6 +50,11 @@ func HandleCmd(
 		return erros.ErrUnknownCommand{Name: name}
 	}
 
-	session.ActiveCommand = name
+	if cmd.IsStateful() {
+		session.ActiveCommand = name
+	} else {
+		session.ActiveCommand = ""
+	}
+
 	return cmd.Execute(ctx, session, args)
 }

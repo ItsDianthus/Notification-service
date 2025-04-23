@@ -1,4 +1,4 @@
-package command_registry
+package command_handling
 
 import (
 	"context"
@@ -11,4 +11,6 @@ type Command interface {
 	Description() string
 
 	Execute(ctx context.Context, session *domain.UserSession, args []string) error
+
+	IsStateful() bool
 }

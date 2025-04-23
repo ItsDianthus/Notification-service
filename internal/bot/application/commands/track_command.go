@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	appClients "go-ItsDianthus-NotificationLink/internal/bot/application/clients"
-	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_handling"
 	"net/url"
 	"strings"
 
@@ -15,10 +15,10 @@ import (
 type TrackCommand struct {
 	Bot            telegram.BotClient
 	ScrapperClient appClients.ScrapperClient
-	Registry       *command_registry.CommandRegistry
+	Registry       *command_handling.CommandRegistry
 }
 
-func NewTrackCommand(bot telegram.BotClient, scr appClients.ScrapperClient, reg *command_registry.CommandRegistry) *TrackCommand {
+func NewTrackCommand(bot telegram.BotClient, scr appClients.ScrapperClient, reg *command_handling.CommandRegistry) *TrackCommand {
 	return &TrackCommand{Bot: bot, ScrapperClient: scr, Registry: reg}
 }
 
@@ -128,4 +128,8 @@ func (c *TrackCommand) Execute(ctx context.Context, session *domain.UserSession,
 		)
 		return nil
 	}
+}
+
+func (c *TrackCommand) IsStateful() bool {
+	return true
 }

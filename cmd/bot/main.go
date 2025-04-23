@@ -6,7 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
 	"go-ItsDianthus-NotificationLink/internal/bot/application"
-	"go-ItsDianthus-NotificationLink/internal/bot/application/command_registry"
+	"go-ItsDianthus-NotificationLink/internal/bot/application/command_handling"
 	"go-ItsDianthus-NotificationLink/internal/bot/application/commands"
 	"go-ItsDianthus-NotificationLink/internal/bot/config"
 	"go-ItsDianthus-NotificationLink/internal/bot/infrastructure/clients"
@@ -19,13 +19,6 @@ import (
 	"os/signal"
 	"syscall"
 )
-
-func getEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultValue
-}
 
 func main() {
 	// Загрузка .env
@@ -58,7 +51,7 @@ func main() {
 	sessRepo := repo.NewInMemorySessionRepo()
 
 	// Регистрация команд
-	r := command_registry.NewCommandRegistry()
+	r := command_handling.NewCommandRegistry()
 	r.Register(commands.NewStartCommand(botClient, scrapperClient))
 	r.Register(commands.NewMenuCommand(botClient, r))
 	r.Register(commands.NewTrackCommand(botClient, scrapperClient, r))
@@ -68,7 +61,7 @@ func main() {
 
 	// Настройка горутин на получение и обработку сообщений
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 1 // ждать не дольше 10 секунд
+	u.Timeout = 5 // ждать не дольше 10 секунд
 	updates := tgAPI.GetUpdatesChan(u)
 
 	proc := application.NewMessageProcessor(botClient, sessRepo, r, updates, lg)

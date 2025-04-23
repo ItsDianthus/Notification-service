@@ -42,3 +42,7 @@ func (c *UntrackCommand) Execute(ctx context.Context, session *domain.UserSessio
 	)
 	return nil
 }
+
+func (c *UntrackCommand) IsStateful() bool {
+	return false
+}
